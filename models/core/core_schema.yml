@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: fact_matches
+    columns:
+      - name: match_api_id
+        tests:
+          - unique
+          - not_null
+
+  - name: mart_home_advantage
+    columns:
+      - name: league_id
+        tests:
+          - not_null
