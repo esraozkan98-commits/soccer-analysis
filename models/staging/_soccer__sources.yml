@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: soccer_raw
+    database: primordial-mile-449805-j0   # GCP projemiz
+    schema: soccer_raw                     # ham verinin durdugu dataset
+    tables:
+      - name: Country
+      - name: League
+      - name: Team
+      - name: Team_Attributes
+      - name: Player
+      - name: Player_Attributes
+      - name: Match
