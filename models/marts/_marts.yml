@@ -1,0 +1,49 @@
+# models/marts/_marts.yml
+version: 2
+
+models:
+
+  - name: mart_home_advantage
+    description: "Lig ve sezon bazında ev sahibi avantaj metrikleri"
+    columns:
+      - name: league_name
+        tests:
+          - not_null
+      - name: season
+        tests:
+          - not_null
+      - name: total_matches
+        tests:
+          - not_null
+      - name: home_win_percentage
+        tests:
+          - not_null
+      - name: home_advantage_index
+        tests:
+          - not_null
+
+  - name: mart_team_performance
+    description: "Takım bazında sezonluk performans özeti"
+    columns:
+      - name: team_name
+        tests:
+          - not_null
+      - name: season
+        tests:
+          - not_null
+      - name: matches_played
+        tests:
+          - not_null
+
+  - name: mart_top_players
+    description: "En yüksek ratingli 500 oyuncu"
+    columns:
+      - name: player_name
+        tests:
+          - not_null
+      - name: overall_rating
+        tests:
+          - not_null
+      - name: estimated_age
+        tests:
+          - not_null

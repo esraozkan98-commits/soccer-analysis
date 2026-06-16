@@ -1,0 +1,75 @@
+# models/staging/_staging.yml
+version: 2
+
+models:
+
+  - name: stg_players
+    description: "Ham Player tablosunun temizlenmiş hali"
+    columns:
+      - name: player_api_id
+        tests:
+          - not_null
+          - unique
+      - name: player_name
+        tests:
+          - not_null
+      - name: birthday
+        tests:
+          - not_null
+
+  - name: stg_player_attributes
+    description: "Ham Player_Attributes tablosunun temizlenmiş hali (NULL rating filtreli)"
+    columns:
+      - name: player_api_id
+        tests:
+          - not_null           # unique DEĞİL — aynı oyuncunun birden fazla tarih kaydı olabilir
+      - name: overall_rating
+        tests:
+          - not_null
+      - name: assessment_date
+        tests:
+          - not_null
+
+  - name: stg_teams
+    description: "Ham Team tablosunun temizlenmiş hali"
+    columns:
+      - name: team_api_id
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_leagues
+    description: "Ham League tablosunun temizlenmiş hali"
+    columns:
+      - name: league_id
+        tests:
+          - not_null
+          - unique
+      - name: country_id
+        tests:
+          - not_null
+
+  - name: stg_countries
+    description: "Ham Country tablosunun temizlenmiş hali"
+    columns:
+      - name: country_id
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_matches
+    description: "Ham Match tablosunun temizlenmiş hali — B365 sütunları dahil"
+    columns:
+      - name: match_api_id
+        tests:
+          - not_null
+          - unique
+      - name: league_id
+        tests:
+          - not_null
+      - name: home_team_goal
+        tests:
+          - not_null
+      - name: away_team_goal
+        tests:
+          - not_null

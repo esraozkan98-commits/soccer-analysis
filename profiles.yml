@@ -1,0 +1,12 @@
+# ~/.dbt/profiles.yml
+european_soccer:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth              
+      project: soccer-analysis-499207
+      dataset: european_soccer   
+      threads: 4
+      timeout_seconds: 300
+      location: EU               

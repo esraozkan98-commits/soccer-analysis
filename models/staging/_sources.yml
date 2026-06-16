@@ -1,0 +1,81 @@
+# models/staging/_sources.yml
+version: 2
+
+sources:
+  - name: european_soccer
+    database: soccer-analysis-499207
+    schema: european_soccer
+    description: "Kaggle'dan alınan ham Avrupa futbol verileri"
+
+    tables:
+
+      - name: Player
+        description: "Oyuncuların kimlik ve fiziksel bilgileri"
+        columns:
+          - name: player_api_id
+            description: "Oyuncu benzersiz ID'si — sistemin her yerine bu FK gider"
+            tests:
+              - not_null       # Her oyuncunun ID'si olmalı
+              - unique         # Aynı ID'den 2 oyuncu olmamalı
+          - name: player_name
+            tests:
+              - not_null
+          - name: height
+            tests:
+              - not_null
+          - name: weight
+            tests:
+              - not_null
+
+      - name: Player_Attributes
+        description: "Oyuncu rating geçmişi — bir oyuncunun birden fazla kaydı olabilir"
+        columns:
+          - name: player_api_id
+            tests:
+              - not_null       
+      - name: Team
+        description: "Takım isimleri ve kısa kodları"
+        columns:
+          - name: team_api_id
+            tests:
+              - not_null
+              - unique
+          - name: team_long_name
+            tests:
+              - not_null
+
+      - name: League
+        description: "Lig bilgileri — country_id ile Country tablosuna bağlanır"
+        columns:
+          - name: id
+            tests:
+              - not_null
+              - unique
+          - name: country_id
+            tests:
+              - not_null
+
+      - name: Country
+        description: "Ülke adları"
+        columns:
+          - name: id
+            tests:
+              - not_null
+              - unique
+          - name: name
+            tests:
+              - not_null
+
+      - name: Match
+        description: "Tüm maç verileri: goller, B365 bahis oranları"
+        columns:
+          - name: match_api_id
+            tests:
+              - not_null
+              - unique         # Aynı maç iki kez girilmemeli
+          - name: home_team_goal
+            tests:
+              - not_null
+          - name: away_team_goal
+            tests:
+              - not_null
