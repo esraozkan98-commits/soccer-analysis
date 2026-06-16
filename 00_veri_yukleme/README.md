@@ -1,1 +1,0 @@
-Veri yükleme klasörü
