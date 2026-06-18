@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proje Sunumu — Avrupa Futbol Ligleri Analizi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{--ana:#1E5C8B;--koyu1:#133A57;--koyu2:#0E2A40;--acik:#5FA8D3;--vurgu:#E8924A;--gri:#AEBCC4;--koyu:#22323C;--zemin:#EEF2F5;--kart:#fff;--soluk:#6B7A82;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+  body{background:#dde5ea;color:var(--koyu);line-height:1.55;}
+  .uygulama{max-width:1080px;margin:0 auto;background:var(--zemin);min-height:100vh;}
+  .ust{background:linear-gradient(90deg,#0E2A40,#1E5C8B);color:#fff;padding:20px 26px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .ust h1{font-size:20px;font-weight:700;}
+  .ust p{font-size:13px;opacity:.85;margin-top:3px;}
+  .tam-btn{flex:0 0 auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;cursor:pointer;padding:9px 14px;border-radius:8px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+  .tam-btn:hover{background:rgba(255,255,255,.28);}
+  .tam-btn svg{width:16px;height:16px;}
+  /* futbol topu sekmeler */
+  .adimlar{display:flex;gap:10px;background:#0E2A40;padding:16px 16px;overflow-x:auto;position:sticky;top:0;z-index:20;}
+  .adim{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;cursor:pointer;flex:0 0 auto;width:78px;}
+  .top{width:54px;height:54px;border-radius:50%;position:relative;transition:.15s;background:#fff url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='white' stroke='%23172a3a' stroke-width='2'/><g fill='none' stroke='%23172a3a' stroke-width='2'><line x1='32' y1='22' x2='32' y2='6'/><line x1='41.5' y1='28.9' x2='56' y2='23'/><line x1='37.9' y1='40.1' x2='48' y2='54'/><line x1='26.1' y1='40.1' x2='16' y2='54'/><line x1='22.5' y1='28.9' x2='8' y2='23'/></g><polygon points='32,22 41.5,28.9 37.9,40.1 26.1,40.1 22.5,28.9' fill='%23172a3a'/><g fill='%23172a3a'><polygon points='32,3.5 38.2,8 35.8,15.3 28.2,15.3 25.8,8'/><polygon points='32,3.5 38.2,8 35.8,15.3 28.2,15.3 25.8,8' transform='rotate(72 32 32)'/><polygon points='32,3.5 38.2,8 35.8,15.3 28.2,15.3 25.8,8' transform='rotate(144 32 32)'/><polygon points='32,3.5 38.2,8 35.8,15.3 28.2,15.3 25.8,8' transform='rotate(216 32 32)'/><polygon points='32,3.5 38.2,8 35.8,15.3 28.2,15.3 25.8,8' transform='rotate(288 32 32)'/></g></svg>") center/92% no-repeat;}
+  .no{position:absolute;right:-3px;bottom:-3px;width:21px;height:21px;border-radius:50%;background:var(--vurgu);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #0E2A40;}
+  .adim:hover .top{transform:scale(1.06);}
+  .adim.aktif .top{box-shadow:0 0 0 4px rgba(232,146,74,.45);transform:scale(1.1);}
+  .cap{font-size:11px;color:#9fb6c6;font-weight:600;white-space:nowrap;}
+  .adim.aktif .cap{color:#fff;}
+  .govde{padding:26px;}
+  .faz{display:none;}
+  .faz.aktif{display:block;animation:gir .25s ease;}
+  @keyframes gir{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  h2.fazbas{font-size:22px;color:var(--koyu1);margin-bottom:4px;}
+  .rozet{display:inline-block;background:var(--vurgu);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;}
+  h3.alt{font-size:14px;color:var(--ana);margin:20px 0 8px;font-weight:700;}
+  p.metin{font-size:14px;margin-bottom:10px;}
+  .kutu{background:var(--kart);border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(34,50,60,.08);margin-bottom:14px;}
+  ul.liste{list-style:none;margin:6px 0;}
+  ul.liste li{font-size:13.5px;padding:5px 0 5px 22px;position:relative;}
+  ul.liste li::before{content:"›";position:absolute;left:6px;color:var(--ana);font-weight:700;}
+  pre{background:#13212c;color:#d7e3ea;border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:12.5px;font-family:'DejaVu Sans Mono',Consolas,monospace;line-height:1.5;margin-bottom:14px;}
+  pre .y{color:#E8B36A;}pre .m{color:#7FB9DD;}pre .n{color:#8aa0ac;}
+  .agac{background:#13212c;color:#cdd9e0;border-radius:10px;padding:14px 16px;font-family:'DejaVu Sans Mono',monospace;font-size:12.5px;white-space:pre;overflow-x:auto;margin-bottom:14px;}
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0;}
+  .kpi .k{background:var(--kart);border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(34,50,60,.08);border-top:4px solid var(--ana);}
+  .kpi .k:nth-child(2){border-top-color:var(--acik);}.kpi .k:nth-child(3){border-top-color:var(--vurgu);}.kpi .k:nth-child(4){border-top-color:var(--acik);}
+  .kpi .s{font-size:24px;font-weight:700;color:var(--ana);}
+  .kpi .k:nth-child(2) .s{color:var(--acik);}.kpi .k:nth-child(3) .s{color:var(--vurgu);}.kpi .k:nth-child(4) .s{color:var(--acik);}
+  .kpi .l{font-size:11px;color:var(--soluk);text-transform:uppercase;letter-spacing:.4px;margin-top:4px;}
+  .ikili{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grafik{background:var(--kart);border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(34,50,60,.08);}
+  .grafik h4{font-size:13px;margin-bottom:8px;font-weight:600;}
+  .gk{position:relative;height:230px;}
+  .arac{display:inline-block;background:#e3edf3;color:var(--koyu1);font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;margin:3px 4px 3px 0;}
+  .yolharitasi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;}
+  .yh{background:var(--kart);border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(34,50,60,.08);border-left:4px solid var(--ana);}
+  .yh b{color:var(--koyu1);font-size:13px;}.yh p{font-size:12px;color:var(--soluk);margin-top:3px;}
+  .vurgu{background:#eaf2f8;border-left:4px solid var(--vurgu);border-radius:8px;padding:12px 14px;font-size:13.5px;margin-bottom:14px;}
+  .gezinme{display:flex;justify-content:space-between;padding:18px 26px 30px;}
+  .btn{background:var(--ana);color:#fff;border:none;cursor:pointer;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;}
+  .btn:hover{background:var(--koyu1);}
+  .btn:disabled{background:#c3ccd1;cursor:default;}
+  .kkutu{background:var(--kart);border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(34,50,60,.08);}
+  .kkutu b{color:var(--koyu1);}
+  @media(max-width:720px){.kpi{grid-template-columns:repeat(2,1fr);}.ikili{grid-template-columns:1fr;}.yolharitasi{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="uygulama">
+  <div class="ust">
+    <div>
+      <h1>Avrupa Futbol Ligleri Analizi</h1>
+      <p>Uçtan uca veri projesi · 2008–2016 · BigQuery · dbt · Python · Looker</p>
+    </div>
+    <button class="tam-btn" id="tamBtn" onclick="tamEkran()" title="Tam ekran">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      <span id="tamYazi">Tam ekran</span>
+    </button>
+  </div>
+  <div class="adimlar" id="adimlar"></div>
+
+  <div class="govde">
+
+    <!-- ÖZET -->
+    <div class="faz aktif" data-faz="0">
+      <h2 class="fazbas">Proje Özeti</h2>
+      <div class="rozet">Genel Bakış</div>
+      <p class="metin">Kaggle "European Soccer Database" kullanılarak 2008–2016 arası 11 Avrupa liginin maçları, takımları ve oyuncuları analiz edildi. Ham veri bir veri ambarına taşındı, dbt ile modellendi, SQL ile keşfedildi, Python ile istatistiksel olarak test edildi, makine öğrenmesiyle maç sonucu tahmin edildi ve sonuçlar Looker Studio panosunda görselleştirildi.</p>
+      <div class="kpi">
+        <div class="k"><div class="s">11</div><div class="l">Lig</div></div>
+        <div class="k"><div class="s">25.979</div><div class="l">Maç</div></div>
+        <div class="k"><div class="s">8</div><div class="l">Sezon</div></div>
+        <div class="k"><div class="s">11.060</div><div class="l">Oyuncu</div></div>
+      </div>
+      <h3 class="alt">Kullanılan Araçlar</h3>
+      <div>
+        <span class="arac">SQLite (kaynak)</span><span class="arac">Google BigQuery</span><span class="arac">dbt (Cloud)</span>
+        <span class="arac">GitHub</span><span class="arac">Python · pandas</span><span class="arac">scikit-learn · scipy</span>
+        <span class="arac">Google Colab</span><span class="arac">Looker Studio</span>
+      </div>
+      <h3 class="alt">Yol Haritası (6 Faz)</h3>
+      <div class="yolharitasi">
+        <div class="yh"><b>Faz 1 · Veri Aktarımı</b><p>SQLite → BigQuery, 7 tablo</p></div>
+        <div class="yh"><b>Faz 2 · Modelleme</b><p>dbt ile 18 model, katmanlı (staging→core→marts)</p></div>
+        <div class="yh"><b>Faz 3 · SQL Analizi</b><p>match_analysis + bulgular</p></div>
+        <div class="yh"><b>Faz 4 · İstatistik</b><p>4 hipotez, anlamlılık testleri</p></div>
+        <div class="yh"><b>Faz 5 · Makine Öğrenmesi</b><p>Maç sonucu tahmini</p></div>
+        <div class="yh"><b>Faz 6 · Görselleştirme</b><p>Looker Studio panosu</p></div>
+      </div>
+    </div>
+
+    <!-- FAZ 1 -->
+    <div class="faz" data-faz="1">
+      <h2 class="fazbas">Faz 1 — Veri Aktarımı</h2>
+      <div class="rozet">SQLite → BigQuery</div>
+      <h3 class="alt">Ne yaptık?</h3>
+      <ul class="liste">
+        <li>313 MB'lık <b>database.sqlite</b> dosyasını kaynak olarak aldık.</li>
+        <li>7 tabloyu (Country, League, Team, Player, Match, Team_Attributes, Player_Attributes) okuyup BigQuery'deki <b>soccer_raw</b> veri setine yükledik.</li>
+        <li>Böylece tüm ham veri bulutta, SQL ile sorgulanabilir hâle geldi.</li>
+      </ul>
+      <h3 class="alt">Kod</h3>
+      <pre><span class="m">import</span> sqlite3, pandas <span class="m">as</span> pd
+<span class="m">from</span> google.cloud <span class="m">import</span> bigquery
+
+con = sqlite3.connect(<span class="y">"database.sqlite"</span>)
+client = bigquery.Client(project=<span class="y">"primordial-mile-449805-j0"</span>)
+
+tablolar = [<span class="y">"Country"</span>,<span class="y">"League"</span>,<span class="y">"Team"</span>,<span class="y">"Player"</span>,
+            <span class="y">"Match"</span>,<span class="y">"Team_Attributes"</span>,<span class="y">"Player_Attributes"</span>]
+
+<span class="m">for</span> t <span class="m">in</span> tablolar:
+    df = pd.read_sql(<span class="y">f"SELECT * FROM {t}"</span>, con)        <span class="n"># tabloyu oku</span>
+    hedef = <span class="y">f"primordial-mile-449805-j0.soccer_raw.{t.lower()}"</span>
+    client.load_table_from_dataframe(df, hedef).result()  <span class="n"># BigQuery'ye yaz</span>
+    <span class="m">print</span>(<span class="y">"Yüklendi:"</span>, t)</pre>
+      <div class="vurgu">Sonuç: 7 ham tablo BigQuery <b>soccer_raw</b> veri setinde. Artık modelleme aşamasına hazırız.</div>
+    </div>
+
+    <!-- FAZ 2 -->
+    <div class="faz" data-faz="2">
+      <h2 class="fazbas">Faz 2 — dbt ile Modelleme</h2>
+      <div class="rozet">dbt · GitHub</div>
+      <h3 class="alt">Ne yaptık?</h3>
+      <ul class="liste">
+        <li>Ham veriyi <b>dbt</b> ile temizleyip katmanlı, <b>yıldız-şema</b> bir veri modeline dönüştürdük. Toplam <b>18 model</b>.</li>
+        <li><b>staging</b> (6): ham tabloların temizlenmiş hâli — stg_countries, stg_leagues, stg_matches, stg_players, stg_player_attributes, stg_teams.</li>
+        <li><b>core</b> — <b>dimensions</b> (3): dim_leagues, dim_players, dim_teams · <b>facts</b> (2): fact_matches, fact_player_attributes. (Yıldız şema: boyut + olgu tabloları.)</li>
+        <li><b>marts</b> (3): mart_home_advantage, mart_team_performance, mart_top_players.</li>
+        <li><b>marts/kpis</b> (4): kpi_betting_analysis, kpi_home_adv_league, kpi_home_adv_team, kpi_rating_vs_advantage.</li>
+        <li>Proje GitHub'da versiyonlandı: <b>soccer-analysis</b>.</li>
+      </ul>
+      <h3 class="alt">Proje (dosya) yapısı</h3>
+      <div class="agac">soccer-analysis/
+├── dbt_project.yml
+├── models/
+│   ├── staging/
+│   │   ├── _sources.yml
+│   │   ├── _staging.yml
+│   │   ├── stg_countries.sql
+│   │   ├── stg_leagues.sql
+│   │   ├── stg_matches.sql
+│   │   ├── stg_players.sql
+│   │   ├── stg_player_attributes.sql
+│   │   └── stg_teams.sql
+│   ├── core/
+│   │   ├── _core.yml
+│   │   ├── dimensions/
+│   │   │   ├── dim_leagues.sql
+│   │   │   ├── dim_players.sql
+│   │   │   └── dim_teams.sql
+│   │   └── facts/
+│   │       ├── fact_matches.sql
+│   │       └── fact_player_attributes.sql
+│   └── marts/
+│       ├── _marts.yml
+│       ├── mart_home_advantage.sql
+│       ├── mart_team_performance.sql
+│       ├── mart_top_players.sql
+│       └── kpis/
+│           ├── kpi_betting_analysis.sql
+│           ├── kpi_home_adv_league.sql
+│           ├── kpi_home_adv_team.sql
+│           └── kpi_rating_vs_advantage.sql
+├── analyses/
+│   └── report_findings.sql
+├── soccer_analysis.ipynb
+└── README.md</div>
+      <h3 class="alt">Örnek model — stg_matches.sql (temsili)</h3>
+      <pre><span class="m">with</span> kaynak <span class="m">as</span> (
+    <span class="m">select</span> * <span class="m">from</span> {{ source(<span class="y">'soccer_raw'</span>, <span class="y">'match'</span>) }}
+)
+<span class="m">select</span>
+    match_api_id      <span class="m">as</span> match_id,
+    league_id,
+    season,
+    home_team_api_id  <span class="m">as</span> home_team_id,
+    away_team_api_id  <span class="m">as</span> away_team_id,
+    home_team_goal,
+    away_team_goal
+<span class="m">from</span> kaynak</pre>
+      <div class="vurgu">Sonuç: Temiz, katmanlı, tekrar üretilebilir bir veri modeli. Analiz hep bu düzenli tablolardan beslenecek.</div>
+    </div>
+
+    <!-- FAZ 3 -->
+    <div class="faz" data-faz="3">
+      <h2 class="fazbas">Faz 3 — SQL Analizi</h2>
+      <div class="rozet">BigQuery SQL · Bulgular</div>
+      <h3 class="alt">Ne yaptık?</h3>
+      <ul class="liste">
+        <li>Analiz için <b>match_analysis</b> tablosunu ürettik: 25.979 maç × 25 kolon (sonuç, goller, bahis oranları, takım reytingi, possession, faul, kart...).</li>
+        <li>SQL sorgularıyla temel soruları yanıtladık: ev avantajı, lig farkları, en başarılı kulüpler.</li>
+      </ul>
+      <h3 class="alt">Örnek sorgu — sonuç dağılımı</h3>
+      <pre><span class="m">select</span>
+  <span class="m">case</span>
+    <span class="m">when</span> home_team_goal &gt; away_team_goal <span class="m">then</span> <span class="y">'Ev Sahibi'</span>
+    <span class="m">when</span> home_team_goal = away_team_goal <span class="m">then</span> <span class="y">'Beraberlik'</span>
+    <span class="m">else</span> <span class="y">'Deplasman'</span>
+  <span class="m">end</span> <span class="m">as</span> sonuc,
+  <span class="m">count</span>(*) <span class="m">as</span> mac_sayisi,
+  <span class="m">round</span>(100.0 * <span class="m">count</span>(*) / <span class="m">sum</span>(<span class="m">count</span>(*)) <span class="m">over</span>(), 1) <span class="m">as</span> yuzde
+<span class="m">from</span> dbt_soccer.match_analysis
+<span class="m">group by</span> 1 <span class="m">order by</span> mac_sayisi <span class="m">desc</span></pre>
+      <div class="ikili">
+        <div class="grafik"><h4>Sonuç Dağılımı</h4><div class="gk"><canvas id="c3_donut"></canvas></div></div>
+        <div class="grafik"><h4>Lig Bazında Maç Başına Gol</h4><div class="gk"><canvas id="c3_lig"></canvas></div></div>
+      </div>
+      <h3 class="alt">Öne çıkan bulgular</h3>
+      <ul class="liste">
+        <li>Ev sahibi galibiyeti <b>%45,9</b>, beraberlik %25,4, deplasman %28,7 — net bir ev avantajı.</li>
+        <li>En gollü lig <b>Hollanda</b> (3,08 gol/maç), en az gollü Polonya (2,42).</li>
+        <li>En başarılı kulüpler: FC Basel 7, Barcelona 6 şampiyonluk.</li>
+      </ul>
+    </div>
+
+    <!-- FAZ 4 -->
+    <div class="faz" data-faz="4">
+      <h2 class="fazbas">Faz 4 — İstatistiksel Testler</h2>
+      <div class="rozet">Python · Colab</div>
+      <h3 class="alt">Ne yaptık?</h3>
+      <p class="metin">Gözlemleri "şans eseri mi, gerçek mi?" diye test ettik. 4 hipotez, 4 farklı test:</p>
+      <ul class="liste">
+        <li><b>H1 — Ki-kare:</b> Ev avantajı gerçek mi? → p ≈ 0, <b>anlamlı</b>.</li>
+        <li><b>H2 — Binom testi:</b> Bahis favorisi tutar mı? → favori %53,3 isabet, rastgeleden çok yüksek.</li>
+        <li><b>H3 — Eşli t-testi:</b> Ev/deplasman oyun tarzı farkı? → ev sahibi daha çok topa sahip, daha az faul/kart yapar.</li>
+        <li><b>H4 — Lojistik regresyon:</b> Takım kalitesi sonucu belirler mi? → reyting farkı arttıkça ev galibiyeti artar (r = 0,45).</li>
+      </ul>
+      <h3 class="alt">Örnek kod — ki-kare (Hipotez 1)</h3>
+      <pre><span class="m">from</span> scipy <span class="m">import</span> stats
+
+sayilar = df[<span class="y">'result'</span>].value_counts()        <span class="n"># ev / beraberlik / deplasman</span>
+chi2, p = stats.chisquare(sayilar)            <span class="n"># eşit dağılıma göre test</span>
+<span class="m">print</span>(<span class="y">f"ki-kare = {chi2:.0f}, p = {p:.2e}"</span>)
+<span class="n"># p ≈ 0  → ev avantajı şans değil, istatistiksel olarak anlamlı</span></pre>
+      <div class="ikili">
+        <div class="grafik"><h4>Reyting Farkına Göre Ev Galibiyeti (H4)</h4><div class="gk"><canvas id="c4_rating"></canvas></div></div>
+        <div class="grafik"><h4>Ev vs Deplasman — Faul ve Kart (H3)</h4><div class="gk"><canvas id="c4_h3"></canvas></div></div>
+      </div>
+      <div class="vurgu">Dört hipotez de doğrulandı: ev avantajı, bahis favorisinin gücü, ev sahibinin oyun tarzı ve takım kalitesinin etkisi istatistiksel olarak anlamlı çıktı.</div>
+    </div>
+
+    <!-- FAZ 5 -->
+    <div class="faz" data-faz="5">
+      <h2 class="fazbas">Faz 5 — Makine Öğrenmesi</h2>
+      <div class="rozet">scikit-learn · Colab</div>
+      <h3 class="alt">Ne yaptık?</h3>
+      <ul class="liste">
+        <li>Maç sonucunu (ev / beraberlik / deplasman) tahmin eden modeller eğittik.</li>
+        <li>Veriyi eğitim (17.661) ve test (4.416) olarak ayırdık.</li>
+        <li><b>Lojistik regresyon</b> ve <b>random forest</b> kurduk; basit referanslarla (rastgele, hep-ev, bahis favorisi) karşılaştırdık.</li>
+      </ul>
+      <h3 class="alt">Örnek kod</h3>
+      <pre><span class="m">from</span> sklearn.model_selection <span class="m">import</span> train_test_split
+<span class="m">from</span> sklearn.linear_model <span class="m">import</span> LogisticRegression
+<span class="m">from</span> sklearn.ensemble <span class="m">import</span> RandomForestClassifier
+
+X = df[[<span class="y">'rating_diff'</span>,<span class="y">'B365H'</span>,<span class="y">'B365D'</span>,<span class="y">'B365A'</span>]]
+y = df[<span class="y">'result'</span>]
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+
+lr = LogisticRegression().fit(X_tr, y_tr)
+rf = RandomForestClassifier(n_estimators=200, random_state=42).fit(X_tr, y_tr)
+
+<span class="m">print</span>(<span class="y">"Lojistik:"</span>, lr.score(X_te, y_te))       <span class="n"># 0.535</span>
+<span class="m">print</span>(<span class="y">"Random Forest:"</span>, rf.score(X_te, y_te))  <span class="n"># 0.454</span></pre>
+      <h3 class="alt">Kullandığımız yöntemler — ne anlama geliyor?</h3>
+      <p class="metin">Maç sonucunu tahmin etmek için basitten karmaşığa farklı yöntemler denedik. Her birinin ne yaptığını sade dille açıklayalım:</p>
+
+      <div class="kkutu" style="margin-bottom:10px;border-left:4px solid var(--gri);">
+        <b>1) Rastgele tahmin — %33,3</b>
+        <p class="metin" style="margin:5px 0 0;">Hiçbir bilgi kullanmadan, körlemesine tahmin etmek. Üç olası sonuç var (ev / beraberlik / deplasman), o yüzden şans eseri yaklaşık üçte bir tutar. Bunu "en kötü ihtimal" olarak koyduk: geliştirdiğimiz her modelin <b>en azından bundan iyi</b> olması gerekir.</p>
+      </div>
+
+      <div class="kkutu" style="margin-bottom:10px;border-left:4px solid var(--gri);">
+        <b>2) Hep "ev sahibi kazanır" de — %45,9</b>
+        <p class="metin" style="margin:5px 0 0;">Hiç düşünmeden, her maça otomatik olarak "ev sahibi kazanır" demek. Futbolda ev avantajı gerçek olduğu için, bu kaba kural bile rastgeleden belirgin biçimde iyi çıkıyor. Yani çok basit bir mantık bile değer taşıyabiliyor — ama hâlâ zayıf.</p>
+      </div>
+
+      <div class="kkutu" style="margin-bottom:10px;border-left:4px solid var(--acik);">
+        <b>3) Bahis favorisini seç — %52,9</b>
+        <p class="metin" style="margin:5px 0 0;">Bahis sitesinin verdiği oranlara bakıp, oranı en düşük olan (yani favori gösterilen) takımı seçmek. Bu aslında binlerce bahisçinin ortak görüşünü temsil eder ve oldukça güçlü bir tahmindir. Bizim modellerimizin asıl yarışacağı, geçmesi gereken rakip budur.</p>
+      </div>
+
+      <div class="kkutu" style="margin-bottom:10px;border-left:4px solid var(--ana);">
+        <b>4) Lojistik regresyon — %53,5 (en iyi)</b>
+        <p class="metin" style="margin:5px 0 0;">İpuçlarını (reyting farkı, bahis oranları) tartıp bir <b>kazanma olasılığı</b> üreten tek bir akıllı formül. Her ipucuna bir ağırlık verir, hepsini toplar ve "ev sahibi %63 kazanır" gibi bir sonuç çıkarır. Reyting farkı büyüdükçe olasılık yumuşakça yükselir. Bu modeli iki şekilde kurduk: sadece <b>reyting farkı</b> ile (%53,3) ve <b>reyting farkı + bahis oranları</b> ile (%53,5). Oranları eklemek doğruluğu neredeyse hiç değiştirmedi, çünkü bahis oranları da zaten büyük ölçüde takım gücünü yansıtır; reyting farkı o bilginin çoğunu zaten içeriyor. Bütün yöntemler içinde en başarılı olan bu oldu.</p>
+      </div>
+
+      <div class="kkutu" style="margin-bottom:14px;border-left:4px solid var(--gri);">
+        <b>5) Random Forest — %45,4</b>
+        <p class="metin" style="margin:5px 0 0;">Yüzlerce <b>karar ağacı</b> kurar. Her ağaç bir dizi evet/hayır sorusuyla tahmin yapar ("Ev sahibinin reytingi daha mı yüksek? Fark büyük mü?..."). Sonra bütün ağaçlar oy verir ve çoğunluğun dediği sonuç seçilir — tek bir kişiye değil, kalabalığa danışmak gibi. Çok karmaşık örüntüleri yakalayabilir; ama bu problemde fazla karmaşık kaldı ve daha sade olan lojistik modelin gerisinde kaldı.</p>
+      </div>
+      <div class="ikili">
+        <div class="grafik"><h4>Tahmin Yöntemlerinin Doğruluğu</h4><div class="gk"><canvas id="c5_model"></canvas></div></div>
+        <div class="grafik"><h4>Özellik Önemi (Random Forest)</h4><div class="gk"><canvas id="c5_feat"></canvas></div></div>
+      </div>
+
+      <div class="vurgu"><b>Genel bulgu:</b> Lojistik regresyon (%53,5) hem bahis favorisini (%52,9) hem random forest'ı (%45,4) geçti. "Daha karmaşık model her zaman daha iyi değildir." En belirleyici ipucu reyting farkıydı.</div>
+    </div>
+
+    <!-- FAZ 6 -->
+    <div class="faz" data-faz="6">
+      <h2 class="fazbas">Faz 6 — Görselleştirme (Looker Studio)</h2>
+      <div class="rozet">Looker · BigQuery</div>
+      <h3 class="alt">Ne yaptık?</h3>
+      <ul class="liste">
+        <li>Looker Studio'yu BigQuery'deki <b>dbt_soccer</b> tablolarına bağladık.</li>
+        <li>Python sonuçlarını (ML doğrulukları, özellik önemi, hipotez bulguları) BigQuery'ye küçük tablolar olarak yazıp Looker'a aktardık.</li>
+        <li><b>7 sayfalık interaktif pano</b> kurduk:</li>
+      </ul>
+      <div class="yolharitasi">
+        <div class="yh"><b>Kapak</b><p>Proje başlığı, anahtar sayılar</p></div>
+        <div class="yh"><b>Genel Bakış</b><p>KPI'lar, gol, sonuç dağılımı</p></div>
+        <div class="yh"><b>Lig &amp; Maç</b><p>Ev avantajı, lig tablosu</p></div>
+        <div class="yh"><b>Takım</b><p>Puan, hücum/savunma</p></div>
+        <div class="yh"><b>Oyuncu</b><p>Reyting dağılımı, en iyiler</p></div>
+        <div class="yh"><b>İstatistik</b><p>Hipotez bulguları</p></div>
+        <div class="yh"><b>Makine Öğrenmesi</b><p>Model karşılaştırması</p></div>
+      </div>
+      <h3 class="alt">Pano önizleme</h3>
+      <div class="ikili">
+        <div class="grafik"><h4>En Çok Puan Toplayan Takımlar</h4><div class="gk"><canvas id="c6_takim"></canvas></div></div>
+        <div class="grafik"><h4>En Yüksek Reytingli Oyuncular</h4><div class="gk"><canvas id="c6_oyuncu"></canvas></div></div>
+      </div>
+      <div class="vurgu">Sonuç: Ham veriden başlayıp temiz model, istatistiksel kanıt, tahmin modeli ve karar vericinin tek bakışta anlayacağı bir panoya ulaşan, uçtan uca tamamlanmış bir veri projesi.</div>
+    </div>
+
+  </div>
+
+  <div class="gezinme">
+    <button class="btn" id="geri" onclick="git(aktif-1)">← Geri</button>
+    <button class="btn" id="ileri" onclick="git(aktif+1)">İleri →</button>
+  </div>
+</div>
+
+<script>
+const ANA='#1E5C8B', ACIK='#5FA8D3', VURGU='#E8924A', GRI='#AEBCC4';
+Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.color='#6B7A82';Chart.defaults.font.size=11;
+const cap=["Özet","Veri","dbt","SQL","İstatistik","ML","Looker"];
+const yatay={indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#eef1f4'}},y:{grid:{display:false}}}};
+const pct={ticks:{callback:v=>v+'%'},grid:{color:'#eef1f4'}};
+
+const ad=document.getElementById('adimlar');
+cap.forEach((b,i)=>{const w=document.createElement('button');w.className='adim'+(i==0?' aktif':'');
+  w.onclick=()=>git(i);
+  w.innerHTML='<span class="top">'+(i==0?'':'<span class="no">'+i+'</span>')+'</span><span class="cap">'+b+'</span>';
+  ad.appendChild(w);});
+
+let aktif=0; const kurulan={};
+function git(n){
+  if(n<0||n>=cap.length) return;
+  document.querySelectorAll('.faz').forEach(f=>f.classList.remove('aktif'));
+  document.querySelector('.faz[data-faz="'+n+'"]').classList.add('aktif');
+  document.querySelectorAll('.adim').forEach((a,i)=>a.classList.toggle('aktif',i==n));
+  aktif=n;
+  document.getElementById('geri').disabled=(n==0);
+  document.getElementById('ileri').disabled=(n==cap.length-1);
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(grafikler[n] && !kurulan[n]){grafikler[n]();kurulan[n]=true;}
+}
+
+const grafikler={
+  3(){
+    new Chart(c3_donut,{type:'doughnut',data:{labels:['Ev Sahibi','Beraberlik','Deplasman'],datasets:[{data:[45.9,25.4,28.7],backgroundColor:[ANA,GRI,ACIK],borderWidth:2,borderColor:'#fff'}]},options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12}}}}});
+    new Chart(c3_lig,{type:'bar',data:{labels:['Hollanda','İsviçre','Almanya','Belçika','İspanya','İngiltere','İskoçya','İtalya','Portekiz','Fransa','Polonya'],datasets:[{data:[3.08,2.93,2.90,2.80,2.77,2.71,2.63,2.62,2.53,2.44,2.42],backgroundColor:ANA,borderRadius:4,barThickness:12}]},options:yatay});
+  },
+  4(){
+    new Chart(c4_rating,{type:'bar',data:{labels:['Ev çok zayıf','Ev zayıf','Denk','Ev güçlü','Ev çok güçlü'],datasets:[{data:[17.7,31.8,45.0,59.1,75.2],backgroundColor:ANA,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,...pct}}}});
+    new Chart(c4_h3,{type:'bar',data:{labels:['Faul','Kart'],datasets:[{label:'Ev Sahibi',data:[7.53,1.99],backgroundColor:ANA,borderRadius:4},{label:'Deplasman',data:[7.86,2.36],backgroundColor:ACIK,borderRadius:4}]},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#eef1f4'}}}}});
+  },
+  5(){
+    new Chart(c5_model,{type:'bar',data:{labels:['Rastgele','Hep Ev','Bahis Favorisi','Lojistik (reyting)','Lojistik (r+oran)','Random Forest'],datasets:[{data:[33.3,45.9,52.9,53.3,53.5,45.4],backgroundColor:[GRI,GRI,ACIK,ANA,VURGU,GRI],borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,...pct}}}});
+    new Chart(c5_feat,{type:'bar',data:{labels:['Reyting farkı','Oran: Deplasman','Oran: Ev sahibi','Oran: Beraberlik'],datasets:[{data:[0.585,0.150,0.149,0.117],backgroundColor:ANA,borderRadius:4,barThickness:18}]},options:yatay});
+  },
+  6(){
+    new Chart(c6_takim,{type:'bar',data:{labels:['Barcelona','Real Madrid','Celtic','Rangers','Juventus','Man United','Bayern','FC Basel','Ajax','PSG'],datasets:[{data:[93.1,90.0,88.0,87.2,79.1,79.1,77.9,75.5,75.2,75.1],backgroundColor:ANA,borderRadius:4,barThickness:13}]},options:yatay});
+    new Chart(c6_oyuncu,{type:'bar',data:{labels:['Messi','Ronaldo','Neymar','Neuer','Suarez','Robben','Ibrahimovic','Lewandowski','Aguero','T. Silva'],datasets:[{data:[94,93,90,90,90,89,89,88,88,88],backgroundColor:ANA,borderRadius:4,barThickness:13}]},options:{...yatay,scales:{x:{min:80,grid:{color:'#eef1f4'}},y:{grid:{display:false}}}}});
+  }
+};
+function tamEkran(){
+  if(!document.fullscreenElement){
+    (document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen||function(){}).call(document.documentElement);
+  } else {
+    (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
+  }
+}
+document.addEventListener('fullscreenchange',function(){
+  var y=document.getElementById('tamYazi'); if(y) y.textContent=document.fullscreenElement?'Çık':'Tam ekran';
+});
+git(0);
+</script>
+</body>
+</html>
