@@ -1,4 +1,3 @@
-# soccer-analysis
 # European Soccer Analysis — dbt + BigQuery
 
 Avrupa'nın 5 büyük ligine ait futbol verilerini BigQuery üzerinde Star Schema mimarisiyle modelleyen, dbt ile katmanlı pipeline'a dönüştürülmüş bir veri analiz projesidir.
